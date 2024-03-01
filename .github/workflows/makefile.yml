@@ -21,6 +21,9 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
+    - name: Run mocks
+      run: make mocks
+
     - name: Run test-unit
       run: make test-unit
 
