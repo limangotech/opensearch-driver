@@ -9,9 +9,11 @@ import (
 )
 
 func TestReadErrorFromResponse(t *testing.T) {
+	t.Parallel()
+
 	// @case returns nil on success code
 	resp := http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 	}
 
 	err := ReadErrorFromResponse(&resp)
@@ -21,7 +23,7 @@ func TestReadErrorFromResponse(t *testing.T) {
 
 	// @case returns error from body
 	resp = http.Response{
-		StatusCode: 400,
+		StatusCode: http.StatusBadRequest,
 		Body: &stubs.ResponseBody{
 			Reader: strings.NewReader("test error"),
 		},

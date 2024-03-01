@@ -13,6 +13,8 @@ import (
 )
 
 func TestMigrationsIndexManager_Upsert(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
 	manager := NewMigrationsIndexManager(transport)
@@ -38,6 +40,8 @@ func TestMigrationsIndexManager_Upsert(t *testing.T) {
 }
 
 func TestMigrationsIndexManager_Exists(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
 	manager := NewMigrationsIndexManager(transport)
@@ -84,6 +88,8 @@ func TestMigrationsIndexManager_Exists(t *testing.T) {
 }
 
 func TestMigrationsIndexManager_Create(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
 	manager := NewMigrationsIndexManager(transport)

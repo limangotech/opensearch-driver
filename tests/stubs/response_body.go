@@ -7,6 +7,7 @@ type ResponseBody struct {
 }
 
 func (r *ResponseBody) Read(p []byte) (int, error) {
+	//nolint:wrapcheck
 	return r.Reader.Read(p)
 }
 
