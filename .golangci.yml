@@ -73,7 +73,6 @@ linters-settings:
   gci:
     sections:
       - standard
-      - prefix(git.limango.tech)
       - prefix(github.com)
       - prefix(golang.org)
       - default
