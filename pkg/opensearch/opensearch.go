@@ -1,3 +1,5 @@
+//go:generate mockgen -build_flags=--mod=mod -destination ../../tests/mocks/mock_opensearchapi/transport.go github.com/opensearch-project/opensearch-go/v2/opensearchapi Transport
+
 package opensearch
 
 import (

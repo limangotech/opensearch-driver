@@ -1,5 +1,4 @@
-name: Makefile CI
-
+name: Go
 on:
   push:
     branches: [ "main" ]
@@ -8,24 +7,23 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         go-version: [ '1.22.x' ]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Go ${{ matrix.go-version }}
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Run mocks
-      run: make mocks
+      - name: Generate
+        run: make generate
 
-    - name: Run test-unit
-      run: make test-unit
+      - name: Lint
+        run: make lint
 
-    - name: Run test-lint
-      run: make test-lint
+      - name: Test
+        run: make test
