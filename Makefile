@@ -1,12 +1,16 @@
-.PHONY: test-lint
+.PHONY: all install generate test lint
 
-mocks:
+all: install generate lint test
+
+install:
 	go install go.uber.org/mock/mockgen@latest
-	mockgen -destination tests/mocks/mock_opensearchapi/transport.go github.com/opensearch-project/opensearch-go/v2/opensearchapi Transport
+	export PATH=$PATH:$(go env GOPATH)/bin
 
-test-unit:
-	go test ./...
+generate:
+	go generate -v ./...
 
-test-lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
-	golangci-lint run ./...
+test:
+	go test -v ./...
+
+lint:
+	go run -mod=mod github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2 run -v ./...

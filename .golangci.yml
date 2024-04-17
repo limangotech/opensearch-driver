@@ -95,3 +95,7 @@ linters-settings:
       - k
       - i
       - v
+
+issues:
+  exclude-dirs:
+    - tests
