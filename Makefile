@@ -1,6 +1,6 @@
 .PHONY: all install generate test lint
 
-all: install generate lint test
+all: lint test
 
 install:
 	go install go.uber.org/mock/mockgen@latest
