@@ -1,4 +1,4 @@
-package opensearch
+package opensearch_test
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/mock/gomock"
 
+	"github.com/dhojayev/opensearch-driver/pkg/opensearch"
 	"github.com/dhojayev/opensearch-driver/tests/mocks/mock_opensearchapi"
 	"github.com/dhojayev/opensearch-driver/tests/stubs"
 )
@@ -17,7 +18,7 @@ func TestMigrationsIndexManager_Upsert(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := NewMigrationsIndexManager(transport)
+	manager := opensearch.NewMigrationsIndexManager(transport)
 
 	// @case return on exist
 	resp := http.Response{StatusCode: http.StatusOK}
@@ -44,7 +45,7 @@ func TestMigrationsIndexManager_Exists(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := NewMigrationsIndexManager(transport)
+	manager := opensearch.NewMigrationsIndexManager(transport)
 
 	// @case returns true on 200
 	resp := http.Response{StatusCode: http.StatusOK}
@@ -92,7 +93,7 @@ func TestMigrationsIndexManager_Create(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := NewMigrationsIndexManager(transport)
+	manager := opensearch.NewMigrationsIndexManager(transport)
 
 	// @case returns nil on success
 	resp := http.Response{StatusCode: http.StatusOK}

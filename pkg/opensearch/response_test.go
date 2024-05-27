@@ -1,10 +1,11 @@
-package opensearch
+package opensearch_test
 
 import (
 	"net/http"
 	"strings"
 	"testing"
 
+	"github.com/dhojayev/opensearch-driver/pkg/opensearch"
 	"github.com/dhojayev/opensearch-driver/tests/stubs"
 )
 
@@ -16,7 +17,7 @@ func TestReadErrorFromResponse(t *testing.T) {
 		StatusCode: http.StatusOK,
 	}
 
-	err := ReadErrorFromResponse(&resp)
+	err := opensearch.ReadErrorFromResponse(&resp)
 	if err != nil {
 		t.Errorf("Expected nil, got %s", err)
 	}
@@ -29,7 +30,7 @@ func TestReadErrorFromResponse(t *testing.T) {
 		},
 	}
 
-	err = ReadErrorFromResponse(&resp)
+	err = opensearch.ReadErrorFromResponse(&resp)
 	if err == nil {
 		t.Error("Expected error, got nil")
 
