@@ -20,7 +20,7 @@ requests and communicate with Opensearch.
 ### Installation
 
 ``` shell 
-go get github.com/dhojayev/opensearch-driver
+go get github.com/limangotech/opensearch-driver
 ```
 
 ## Usage
@@ -88,7 +88,7 @@ Exmaple usage in *.go file:
 package main
 
 import (
-	opensearchdriver "github.com/dhojayev/opensearch-driver/pkg/opensearch"
+	opensearchdriver "github.com/limangotech/opensearch-driver/pkg/opensearch"
 	"github.com/opensearch-project/opensearch-go/v2"
 )
 

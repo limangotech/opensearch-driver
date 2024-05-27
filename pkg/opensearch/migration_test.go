@@ -8,9 +8,9 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/dhojayev/opensearch-driver/pkg/opensearch"
-	"github.com/dhojayev/opensearch-driver/tests/mocks/mock_opensearchapi"
-	"github.com/dhojayev/opensearch-driver/tests/stubs"
+	"github.com/limangotech/opensearch-driver/pkg/opensearch"
+	"github.com/limangotech/opensearch-driver/tests/mocks/mock_opensearchapi"
+	"github.com/limangotech/opensearch-driver/tests/stubs"
 )
 
 func TestMigrationsIndexManager_Upsert(t *testing.T) {

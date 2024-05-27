@@ -1,4 +1,4 @@
-module github.com/dhojayev/opensearch-driver
+module github.com/limangotech/opensearch-driver
 
 go 1.22
 
