@@ -1,4 +1,4 @@
-//go:generate mockgen -build_flags=--mod=mod -destination ../../tests/mocks/mock_opensearchapi/transport.go github.com/opensearch-project/opensearch-go/v2/opensearchapi Transport
+//go:generate mockgen -build_flags=--mod=mod -destination ../../tests/mocks/mock_opensearchapi/transport_mock.go github.com/opensearch-project/opensearch-go/v2/opensearchapi Transport
 
 package opensearch
 
@@ -153,6 +153,7 @@ func (o *OpenSearch) Version() (version int, dirty bool, err error) {
 	return parsedResp.Source.Version, parsedResp.Source.Dirty, nil
 }
 
+//nolint:ireturn
 func (o *OpenSearch) Open(_ string) (database.Driver, error) {
 	return nil, fmt.Errorf(errTemplateUnsupportedOperation, "open")
 }

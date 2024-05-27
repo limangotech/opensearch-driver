@@ -26,16 +26,17 @@ linters:
     - gocyclo
     - godot
     - godox
-    - gomnd
     - gomoddirectives
     - goprintffuncname
     - gosec
     - importas
     - inamedparam
     - interfacebloat
+    - ireturn
     - lll
     - makezero
     - misspell
+    - mnd
     - musttag
     - nestif
     - nilerr
@@ -54,9 +55,9 @@ linters:
     - revive
     - sloglint
     - stylecheck
-    - tagalign
     - tagliatelle
     - tenv
+    - testpackage
     - thelper
     - tparallel
     - unconvert
@@ -70,20 +71,6 @@ linters:
     - zerologlint
 
 linters-settings:
-  gci:
-    sections:
-      - standard
-      - prefix(github.com)
-      - prefix(golang.org)
-      - default
-    custom-order: true
-
-  tagliatelle:
-    case:
-      use-field-name: true
-      rules:
-        json: snake
-
   godot:
     exclude:
       - "^ @"
@@ -97,5 +84,16 @@ linters-settings:
       - v
 
 issues:
-  exclude-dirs:
-    - tests
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - lll
+        - wrapcheck
+    - path: tests/.*\.go
+      linters:
+        - dupl
+        - gochecknoglobals
+        - lll
+        - mnd
+        - wrapcheck
