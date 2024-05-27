@@ -96,4 +96,6 @@ issues:
         - gochecknoglobals
         - lll
         - mnd
+    - path: tests/.*\.go
+      linters:
         - wrapcheck
