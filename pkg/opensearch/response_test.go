@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dhojayev/opensearch-driver/pkg/opensearch"
-	"github.com/dhojayev/opensearch-driver/tests/stubs"
+	"github.com/limangotech/opensearch-driver/pkg/opensearch"
+	"github.com/limangotech/opensearch-driver/tests/stubs"
 )
 
 func TestReadErrorFromResponse(t *testing.T) {
