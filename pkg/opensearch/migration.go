@@ -38,8 +38,7 @@ func NewMigrationFromRawContent(content []byte) (Migration, error) {
 
 func (m Migration) Validate() error {
 	switch {
-	case m.URL == "":
-	case m.Method == "":
+	case m.URL == "", m.Method == "":
 		return ErrInvalidContent
 	}
 

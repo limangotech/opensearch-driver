@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/limangotech/opensearch-driver/pkg/opensearch"
 	"github.com/limangotech/opensearch-driver/tests/stubs"
 )
@@ -18,9 +20,8 @@ func TestReadErrorFromResponse(t *testing.T) {
 	}
 
 	err := opensearch.ReadErrorFromResponse(&resp)
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err)
-	}
+
+	assert.NoError(t, err)
 
 	// @case returns error from body
 	resp = http.Response{
@@ -31,13 +32,7 @@ func TestReadErrorFromResponse(t *testing.T) {
 	}
 
 	err = opensearch.ReadErrorFromResponse(&resp)
-	if err == nil {
-		t.Error("Expected error, got nil")
 
-		return
-	}
-
-	if !strings.Contains(err.Error(), "test error") {
-		t.Errorf("Unexpected error: %s", err)
-	}
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "test error")
 }
