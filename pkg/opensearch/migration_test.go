@@ -1,108 +1,139 @@
 package opensearch_test
 
 import (
-	"errors"
-	"net/http"
-	"strings"
+	"io"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 
 	"github.com/limangotech/opensearch-driver/pkg/opensearch"
-	"github.com/limangotech/opensearch-driver/tests/mocks/mock_opensearchapi"
-	"github.com/limangotech/opensearch-driver/tests/stubs"
 )
 
-func TestMigrationsIndexManager_Upsert(t *testing.T) {
+func TestNewMigrationFromRawContent(t *testing.T) {
 	t.Parallel()
 
-	ctrl := gomock.NewController(t)
-	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := opensearch.NewMigrationsIndexManager(transport)
+	// @case error on invalid JSON
+	rawContent := []byte("invalid")
+	_, err := opensearch.NewMigrationFromRawContent(rawContent)
 
-	// @case return on exist
-	resp := http.Response{StatusCode: http.StatusOK}
+	assert.ErrorContains(t, err, "JSON syntax error")
 
-	transport.
-		EXPECT().
-		Perform(gomock.Any()).
-		Return(&resp, nil).
-		Times(1)
+	// @case error on validation error
+	rawContent = []byte(`{
+    "method": "",
+    "url": "/_index_template/test"
+}`)
 
-	_ = manager.Upsert("test index")
+	_, err = opensearch.NewMigrationFromRawContent(rawContent)
 
-	// @case create if it does not exist
-	resp = http.Response{StatusCode: http.StatusNotFound}
+	assert.ErrorContains(t, err, "migration content validation failure")
 
-	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil).Times(1)
-	transport.EXPECT().Perform(gomock.Any()).Return(&http.Response{}, nil).Times(1)
+	// @case valid
+	rawContent = []byte(`{
+    "method": "DELETE",
+    "url": "/_index_template/test"
+}`)
 
-	_ = manager.Upsert("test index")
+	expected := opensearch.Migration{
+		Method: "DELETE",
+		URL:    "/_index_template/test",
+	}
+	migration, err := opensearch.NewMigrationFromRawContent(rawContent)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, migration)
 }
 
-func TestMigrationsIndexManager_Exists(t *testing.T) {
+func TestMigration_Validate(t *testing.T) {
 	t.Parallel()
 
-	ctrl := gomock.NewController(t)
-	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := opensearch.NewMigrationsIndexManager(transport)
-
-	// @case returns true on 200
-	resp := http.Response{StatusCode: http.StatusOK}
-
-	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
-
-	exists, err := manager.Exists("test")
-
-	assert.NoError(t, err)
-	assert.True(t, exists)
-
-	// @case returns false on 404
-	resp = http.Response{StatusCode: http.StatusNotFound}
-
-	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
-
-	exists, err = manager.Exists("test")
-
-	assert.NoError(t, err)
-	assert.False(t, exists)
-
-	// @case returns false on error
-	transport.EXPECT().Perform(gomock.Any()).Return(nil, errors.New("test error"))
-
-	exists, err = manager.Exists("test")
-
-	assert.Error(t, err)
-	assert.False(t, exists)
-}
-
-func TestMigrationsIndexManager_Create(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	transport := mock_opensearchapi.NewMockTransport(ctrl)
-	manager := opensearch.NewMigrationsIndexManager(transport)
-
-	// @case returns nil on success
-	resp := http.Response{StatusCode: http.StatusOK}
-
-	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
-
-	err := manager.Create("test-index")
-
-	assert.NoError(t, err)
-
-	// @case returns error on failure
-	resp = http.Response{
-		StatusCode: http.StatusBadGateway,
-		Body:       &stubs.ResponseBody{Reader: strings.NewReader("test error")},
+	migration := opensearch.Migration{
+		URL: "/_index_template/test",
 	}
 
-	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
+	err := migration.Validate()
 
-	err = manager.Create("test-index")
+	assert.ErrorIs(t, err, opensearch.ErrInvalidContent)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "test error")
+	migration = opensearch.Migration{
+		Method: "DELETE",
+	}
+
+	err = migration.Validate()
+
+	assert.ErrorIs(t, err, opensearch.ErrInvalidContent)
+
+	migration = opensearch.Migration{
+		Method: "DELETE",
+		URL:    "/_index_template/test",
+	}
+
+	err = migration.Validate()
+
+	assert.NoError(t, err)
+}
+
+func TestMigration_CreateRequest(t *testing.T) {
+	t.Parallel()
+
+	migration := opensearch.Migration{
+		Method: "DELETE",
+		URL:    "/_index_template/test",
+	}
+
+	request, err := migration.CreateRequest()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "DELETE", request.Method)
+	assert.Equal(t, "/_index_template/test", request.URL.Path)
+
+	migration = opensearch.Migration{
+		Method: "PUT",
+		URL:    "/_plugins/_ism/policies/rollover_policy",
+		Params: url.Values{
+			"create": []string{
+				"true",
+			},
+		},
+		Body: map[string]any{
+			"policy": map[string]any{
+				"description":   "Daily rollover policy.",
+				"default_state": "rollover",
+				"states": []map[string]any{
+					{
+						"name": "rollover",
+						"actions": []map[string]any{
+							{
+								"rollover": map[string]any{
+									"min_index_age": "1d",
+								},
+							},
+						},
+						"transitions": []map[string]any{},
+					},
+				},
+			},
+			"ism_template": map[string]any{
+				"index_patterns": []string{
+					"import-information*",
+				},
+				"priority": 100,
+			},
+		},
+	}
+
+	request, err = migration.CreateRequest()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "PUT", request.Method)
+	assert.Equal(t, "/_plugins/_ism/policies/rollover_policy", request.URL.Path)
+	assert.Equal(t, "create=true", request.URL.Query().Encode())
+	assert.Equal(t, "application/json", request.Header.Get("Content-Type"))
+
+	expected := `{"ism_template":{"index_patterns":["import-information*"],"priority":100},"policy":{"default_state":"rollover","description":"Daily rollover policy.","states":[{"actions":[{"rollover":{"min_index_age":"1d"}}],"name":"rollover","transitions":[]}]}}`
+	body, err := io.ReadAll(request.Body)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, string(body))
 }
