@@ -20,6 +20,7 @@ type Interface interface {
 type SchemaValidator struct {
 }
 
+// NewSchemaValidator creates new instance of SchemaValidator.
 func NewSchemaValidator() SchemaValidator {
 	return SchemaValidator{}
 }

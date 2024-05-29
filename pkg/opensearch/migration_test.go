@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"github.com/limangotech/opensearch-driver/pkg/opensearch"
@@ -31,7 +32,7 @@ func TestMigrationsIndexManager_Upsert(t *testing.T) {
 
 	_ = manager.Upsert("test index")
 
-	// @case create if does not exist
+	// @case create if it does not exist
 	resp = http.Response{StatusCode: http.StatusNotFound}
 
 	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil).Times(1)
@@ -53,13 +54,9 @@ func TestMigrationsIndexManager_Exists(t *testing.T) {
 	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
 
 	exists, err := manager.Exists("test")
-	if err != nil {
-		t.Error(err)
-	}
 
-	if exists != true {
-		t.Error("Expected true, got false")
-	}
+	assert.NoError(t, err)
+	assert.True(t, exists)
 
 	// @case returns false on 404
 	resp = http.Response{StatusCode: http.StatusNotFound}
@@ -67,25 +64,17 @@ func TestMigrationsIndexManager_Exists(t *testing.T) {
 	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
 
 	exists, err = manager.Exists("test")
-	if err != nil {
-		t.Error(err)
-	}
 
-	if exists != false {
-		t.Error("Expected false, got true")
-	}
+	assert.NoError(t, err)
+	assert.False(t, exists)
 
 	// @case returns false on error
 	transport.EXPECT().Perform(gomock.Any()).Return(nil, errors.New("test error"))
 
 	exists, err = manager.Exists("test")
-	if err == nil {
-		t.Error("Expected error, got nil")
-	}
 
-	if exists != false {
-		t.Errorf("Expected false, got true")
-	}
+	assert.Error(t, err)
+	assert.False(t, exists)
 }
 
 func TestMigrationsIndexManager_Create(t *testing.T) {
@@ -101,9 +90,8 @@ func TestMigrationsIndexManager_Create(t *testing.T) {
 	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
 
 	err := manager.Create("test-index")
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err)
-	}
+
+	assert.NoError(t, err)
 
 	// @case returns error on failure
 	resp = http.Response{
@@ -114,13 +102,7 @@ func TestMigrationsIndexManager_Create(t *testing.T) {
 	transport.EXPECT().Perform(gomock.Any()).Return(&resp, nil)
 
 	err = manager.Create("test-index")
-	if err == nil {
-		t.Error("Expected error, got nil")
 
-		return
-	}
-
-	if !strings.Contains(err.Error(), "test error") {
-		t.Errorf("Unexpected error: %s", err)
-	}
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "test error")
 }
