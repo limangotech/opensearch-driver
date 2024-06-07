@@ -4,20 +4,28 @@ package opensearch
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/opensearch-project/opensearch-go/v2"
 	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 	"go.uber.org/atomic"
 )
 
 const (
-	nullVersion                     = -1
-	versionIndexName                = ".migrations"
-	errTemplateUnsupportedOperation = "unsupported operation '%s'"
+	driverName       = "opensearch"
+	nullVersion      = -1
+	versionIndexName = ".migrations"
 )
+
+var ErrUnsupportedOperationDrop = errors.New("unsupported operation 'drop'")
+
+func init() {
+	database.Register(driverName, &OpenSearch{})
+}
 
 type OpenSearch struct {
 	transport         opensearchapi.Transport
@@ -36,6 +44,21 @@ func NewDriver(
 		manager:           manager,
 		MigrationSequence: make([]string, 0),
 	}
+}
+
+//nolint:ireturn
+func (o *OpenSearch) Open(url string) (database.Driver, error) {
+	config, err := NewTransportConfigFromURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	transport, err := opensearch.NewClient(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize OpenSearch client: %w", err)
+	}
+
+	return NewDriver(transport, NewMigrationsIndexManager(transport)), nil
 }
 
 func (o *OpenSearch) Lock() error {
@@ -153,15 +176,10 @@ func (o *OpenSearch) Version() (version int, dirty bool, err error) {
 	return parsedResp.Source.Version, parsedResp.Source.Dirty, nil
 }
 
-//nolint:ireturn
-func (o *OpenSearch) Open(_ string) (database.Driver, error) {
-	return nil, fmt.Errorf(errTemplateUnsupportedOperation, "open")
-}
-
 func (o *OpenSearch) Close() error {
-	return fmt.Errorf(errTemplateUnsupportedOperation, "close")
+	return nil
 }
 
 func (o *OpenSearch) Drop() error {
-	return fmt.Errorf(errTemplateUnsupportedOperation, "drop")
+	return ErrUnsupportedOperationDrop
 }
